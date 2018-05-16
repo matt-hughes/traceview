@@ -18,6 +18,9 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+protected:
+    void closeEvent(QCloseEvent *event);
+
 private slots:
     void on_actionLoad_triggered(void);
     void on_actionZoom_in_triggered(void);

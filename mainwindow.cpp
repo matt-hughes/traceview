@@ -6,6 +6,7 @@
 #define APP_NAME "TraceView"
 
 #define KEY_LAST_FILENAME "lastFileName"
+#define KEY_WINDOW_GEOMETRY "windowGeometry"
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -58,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QSettings settings(ORG_NAME, APP_NAME);
     _fileName = settings.value(KEY_LAST_FILENAME).toString();
+    restoreGeometry(settings.value(KEY_WINDOW_GEOMETRY).toByteArray());
 }
 
 MainWindow::~MainWindow()
@@ -266,4 +268,11 @@ void MainWindow::on_actionFile_format_triggered()
             "  is the remainder of the line (which can contain spaces) representing\n"
             "  text that will be displayed when an event is selected or highlighted.";
     QMessageBox::about(this, "Help: File format", txt);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    QSettings settings(ORG_NAME, APP_NAME);
+    settings.setValue(KEY_WINDOW_GEOMETRY, saveGeometry());
+    QMainWindow::closeEvent(event);
 }
