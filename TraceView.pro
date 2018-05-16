@@ -9,3 +9,8 @@ HEADERS += mainwindow.h \
     traceview.h \
     tracedata.h
 FORMS += mainwindow.ui
+
+macx {
+    ICON += TraceView.icns
+    QMAKE_INFO_PLIST = Info.plist
+}
