@@ -213,7 +213,7 @@ bool TraceFile::openText(const QString& fileName, QProgressDialog* progDlg)
         if(progDlg)
             progDlg->setValue(curFilePos);
 
-        if(sscanf(lineData, "%lf", &timestamp) == 1)
+        if(strlen(lineData) > 0 && (sscanf(lineData, "%lf", &timestamp) == 1))
         {
             EvData ev;
 
