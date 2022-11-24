@@ -1,4 +1,4 @@
-QT += gui widgets
+QT += gui widgets core5compat
 TARGET = TraceView
 TEMPLATE = app
 SOURCES += main.cpp \

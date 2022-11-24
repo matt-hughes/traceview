@@ -1,1 +1,7 @@
 *.pro.user
+.qmake.*
+*.o
+moc_*
+ui_*
+Traceview.app
+Makefile

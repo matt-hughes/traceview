@@ -60,16 +60,16 @@ QString timeToString(double t, bool full)
     double nsec = (usec - (int)usec) * 1000;
 
     if(full)
-        return str.sprintf("%ds.%03dms.%03dus.%03dns", ((int)sec), ((int)msec), ((int)usec), ((int)nsec));
+        return str.asprintf("%ds.%03dms.%03dus.%03dns", ((int)sec), ((int)msec), ((int)usec), ((int)nsec));
     else if(sec >= 1)
-        return str.sprintf("%.3fs", sec);
+        return str.asprintf("%.3fs", sec);
     else if(msec >= 1)
-        return str.sprintf("%.3fms", msec);
+        return str.asprintf("%.3fms", msec);
     else if(usec >= 1)
-        return str.sprintf("%.3fus", usec);
+        return str.asprintf("%.3fus", usec);
     else if(nsec >= 1)
-        return str.sprintf("%.3fns", nsec);
-    return str.sprintf("%fs", t);
+        return str.asprintf("%.3fns", nsec);
+    return str.asprintf("%fs", t);
 }
 
 static int indexRangeToCount(int left, int right)
@@ -297,7 +297,7 @@ void TraceView::paintEvent(QPaintEvent*)
         QString labelTxt = lane.name;
         if(!labelTxt.isNull() && !labelTxt.isEmpty())
         {
-            int labelW = p.fontMetrics().width(labelTxt);
+            int labelW = p.fontMetrics().horizontalAdvance(labelTxt);
             int labelH = LANE_LABEL_H;
             QRect labelRect(LANE_LABEL_INSET_X,LANE_LABEL_INSET_Y+laneY+yOfs,labelW+10,labelH);
             QPainter::RenderHints tmpHints = p.renderHints();
@@ -338,21 +338,21 @@ void TraceView::paintEvent(QPaintEvent*)
 
 void TraceView::mousePressEvent(QMouseEvent* ev)
 {
-    double timeAtCursor = coordToAbsTime(ev->x());
+    double timeAtCursor = coordToAbsTime(ev->position().x());
 
     _mousePressPos = ev->pos();
     _lastMousePos = ev->pos();
 
 
-    if(ev->buttons() & Qt::MidButton && ev->modifiers() & Qt::ShiftModifier)
+    if(ev->buttons() & Qt::MiddleButton && ev->modifiers() & Qt::ShiftModifier)
     {
         zoomToSelection();
     }
     else if(ev->buttons() & Qt::LeftButton)
     {
-        int laneIdx = laneForCoord(ev->y());
+        int laneIdx = laneForCoord(ev->position().y());
         Lane* lane = getLane(laneIdx);
-        if(ev->x() < 20)
+        if(ev->position().x() < 20)
         {
             if(lane)
             {
@@ -360,7 +360,7 @@ void TraceView::mousePressEvent(QMouseEvent* ev)
                 update();
             }
         }
-        else if(ev->x() < 40)
+        else if(ev->position().x() < 40)
         {
             if(lane)
             {
@@ -396,15 +396,15 @@ void TraceView::mouseReleaseEvent(QMouseEvent*)
 void TraceView::mouseMoveEvent(QMouseEvent* ev)
 {
     double timePerPx = _viewTime.delta() / width();
-    double timeAtCursor = _viewTime.begin + ev->x() * timePerPx;
-    int overLaneIdx = laneForCoord(ev->y());
+    double timeAtCursor = _viewTime.begin + ev->position().x() * timePerPx;
+    int overLaneIdx = laneForCoord(ev->position().y());
 
     _cursorTime = timeAtCursor;
 
     if(ev->buttons() & Qt::RightButton)
     {
-        int deltaX = ev->x() - _lastMousePos.x();
-        int deltaY = ev->y() - _lastMousePos.y();
+        int deltaX = ev->position().x() - _lastMousePos.x();
+        int deltaY = ev->position().y() - _lastMousePos.y();
         _lastMousePos = ev->pos();
 
         if(ev->modifiers() & Qt::ShiftModifier)
@@ -443,7 +443,7 @@ void TraceView::mouseMoveEvent(QMouseEvent* ev)
         if(_hoverEvtIdx != -1)
         {
             int evPosX = (int)absTimeToCoord(data->getEventTime(_hoverEvtIdx));
-            if(abs(evPosX - ev->x()) > EVENT_HOVER_DIST)
+            if(abs(evPosX - ev->position().x()) > EVENT_HOVER_DIST)
             {
                 _hoverEvtIdx = -1;
                 _hoverLaneIdx = -1;
@@ -480,7 +480,7 @@ void TraceView::wheelEvent(QWheelEvent* ev)
     if(true)
     {
         double timePerPx = _viewTime.delta() / width();
-        double timeAtCursor = _viewTime.begin + ev->x() * timePerPx;
+        double timeAtCursor = _viewTime.begin + ev->position().x() * timePerPx;
 
         double scale = 1;
         if(ev->modifiers() & Qt::ShiftModifier)

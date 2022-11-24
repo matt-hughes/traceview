@@ -231,7 +231,7 @@ bool TraceFile::openText(const QString& fileName, QProgressDialog* progDlg)
     if(!isMonotonic)
     {
         //QMessageBox::warning(NULL, "Warning", "Timestamps are not monotonic!");
-        qStableSort(_data.begin(), _data.end(), eventLessThan);
+        std::stable_sort(_data.begin(), _data.end(), eventLessThan);
     }
 
     return true;

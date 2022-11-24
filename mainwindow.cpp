@@ -226,7 +226,7 @@ void MainWindow::onSelectionChanged(bool hasSelection)
 
     if(totalEventCount <= MAX_LIST_EVENTS)
     {
-        qStableSort(items.begin(), items.end(), eventLessThan);
+        std::stable_sort(items.begin(), items.end(), eventLessThan);
 
         QList<QPair<double,QString> >::const_iterator iter;
         for(iter = items.begin(); iter != items.end(); ++iter)
