@@ -26,7 +26,7 @@ TraceFile gTraceFile;
 
 #define ZOOM_FACTOR 1.3
 
-#define MAX_LIST_EVENTS 150
+#define MAX_LIST_EVENTS 500
 
 #define EVENT_LIST_DEFAULT_TEXT_COLOR   QColor(200,200,200)
 // #define EVENT_LIST_BG_COLOR             Qt::black // stylesheet is used
