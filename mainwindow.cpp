@@ -28,6 +28,46 @@ TraceFile gTraceFile;
 
 #define MAX_LIST_EVENTS 150
 
+#define EVENT_LIST_DEFAULT_TEXT_COLOR   QColor(200,200,200)
+// #define EVENT_LIST_BG_COLOR             Qt::black // stylesheet is used
+
+class EventListModel : public QStringListModel
+{
+public:
+    EventListModel(QObject* parent = nullptr)
+        :    QStringListModel(parent)
+    {}
+
+    void clearColors() {
+        m_rowColors.clear();
+    }
+
+    QVariant data(const QModelIndex & index, int role) const override
+    {
+        if (role == Qt::ForegroundRole)
+        {
+            auto itr = m_rowColors.find(index.row());
+            if (itr != m_rowColors.end())
+                return itr->second;
+        }
+
+        return QStringListModel::data(index, role);
+    }
+
+    bool setData(const QModelIndex & index, const QVariant & value, int role) override
+    {
+        if (role == Qt::ForegroundRole)
+        {
+            m_rowColors[index.row()] = value.value<QColor>(); 
+            return true;
+        }
+
+        return QStringListModel::setData(index, value, role);
+    }
+private:
+    std::map<int, QColor> m_rowColors;
+};
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -43,8 +83,9 @@ MainWindow::MainWindow(QWidget *parent)
     eventList = new QListView(split);
     //layout->addWidget(eventList);
     eventList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    eventList->setModel(new QStringListModel());
+    eventList->setModel(new EventListModel());
     eventList->setFocusPolicy(Qt::NoFocus);
+    eventList->setStyleSheet("background-color:black; font: 9pt 'Courier';");
     QFont eventFont("Monospace", 9);
     //eventFont.setStyleHint(QFont::TypeWriter);
     eventList->setFont(eventFont);
@@ -182,16 +223,16 @@ void MainWindow::on_actionZoom_all_triggered(void)
     view->zoomAll();
 }
 
-static bool eventLessThan(const QPair<double,QString> &e1, const QPair<double,QString> &e2)
+static bool eventLessThan(const std::tuple<double,QString,QColor> &e1, const std::tuple<double,QString,QColor> &e2)
 {
-    return e1.first < e2.first;
+    return std::get<0>(e1) < std::get<0>(e2);
 }
 
 void MainWindow::onSelectionChanged(bool hasSelection)
 {
-    QStringListModel* model = (QStringListModel*)eventList->model();
+    EventListModel* model = (EventListModel*)eventList->model();
     QStringList itemStrings;
-    QList<QPair<double,QString> > items;
+    QList<std::tuple<double,QString,QColor> > items;
     int totalEventCount = 0;
 
     if(hasSelection)
@@ -217,24 +258,31 @@ void MainWindow::onSelectionChanged(bool hasSelection)
                     {
                         double timestamp = data->getEventTime(eventIdx+n);
                         QString str = data->getEventText(eventIdx+n, true);
-                        items.append(QPair<double,QString>(timestamp,str));
+                        items.append(std::make_tuple(timestamp,str,lane->color));
                     }
                 }
             }
         }
     }
 
+    model->clearColors();
+
     if(totalEventCount <= MAX_LIST_EVENTS)
     {
         std::stable_sort(items.begin(), items.end(), eventLessThan);
 
-        QList<QPair<double,QString> >::const_iterator iter;
-        for(iter = items.begin(); iter != items.end(); ++iter)
-            itemStrings.append(iter->second);
+        uint32_t i = 0;
+        for(auto iter = items.begin(); iter != items.end(); ++iter)
+        {
+            itemStrings.append(std::get<1>(*iter));
+            model->setData(model->index(i), std::get<2>(*iter), Qt::ForegroundRole);
+            ++i;
+        }
     }
     else
     {
         itemStrings.append(QString("Selected %1 events").arg(totalEventCount));
+        model->setData(model->index(0), EVENT_LIST_DEFAULT_TEXT_COLOR, Qt::ForegroundRole);
     }
 
     model->setStringList(itemStrings);

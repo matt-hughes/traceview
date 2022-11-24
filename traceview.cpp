@@ -483,15 +483,17 @@ void TraceView::wheelEvent(QWheelEvent* ev)
         double timeAtCursor = _viewTime.begin + ev->position().x() * timePerPx;
 
         double scale = 1;
+        double dx = (double)ev->pixelDelta().x() * (ev->inverted() ? -1 : 1);
+        double dy = (double)ev->pixelDelta().y() * (ev->inverted() ? -1 : 1);
         if(ev->modifiers() & Qt::ShiftModifier)
         {
-            _scrollYOfs += ev->pixelDelta().y();
+            _scrollYOfs += dy;
         }
         else
         {
-            scale = pow(WHEEL_ZOOM_FACTOR, -(double)ev->pixelDelta().y()/120);
+            scale = pow(WHEEL_ZOOM_FACTOR, -dy/120);
         }
-        double shift = (double)ev->pixelDelta().x()*timePerPx;
+        double shift = dx * timePerPx;
 
         _viewTime.begin = timeAtCursor - (timeAtCursor - _viewTime.begin) * scale + shift;
         _viewTime.end = timeAtCursor + (_viewTime.end - timeAtCursor) * scale + shift;
