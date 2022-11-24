@@ -51,6 +51,7 @@ public:
     inline Range<double> selectedTimeRange() { return _selectTime.fix(); }
     inline Range<int> selectedLaneRange() { return _selectLane.fix(); }
     Lane* getLane(int idx) { return (idx < 0 || idx >= _lanes.size()) ? NULL : (Lane*)&_lanes.at(idx); }
+    int numLanes() const { return _lanes.size(); };
 
 signals:
     void selectionChanged(bool hasSelection);

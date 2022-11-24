@@ -239,27 +239,31 @@ void MainWindow::onSelectionChanged(bool hasSelection)
     {
         Range<int> laneRange = view->selectedLaneRange();
         Range<double> timeRange = view->selectedTimeRange();
-        if(laneRange.begin != -1 && laneRange.end != -1)
+
+        if(laneRange.begin == -1 || laneRange.end == -1)
         {
-            for(int laneIdx = laneRange.begin; laneIdx <= laneRange.end; ++laneIdx)
+            laneRange.begin = 0;
+            laneRange.end = view->numLanes() - 1;
+        }
+        
+        for(int laneIdx = laneRange.begin; laneIdx <= laneRange.end; ++laneIdx)
+        {
+            const Lane* lane = view->getLane(laneIdx);
+            int eventIdx = 0;
+            Trace* data = lane->data;
+            int eventCount = data->eventsInRange(timeRange.begin, timeRange.end, &eventIdx);
+            totalEventCount += eventCount;
+            if(totalEventCount > MAX_LIST_EVENTS)
             {
-                const Lane* lane = view->getLane(laneIdx);
-                int eventIdx = 0;
-                Trace* data = lane->data;
-                int eventCount = data->eventsInRange(timeRange.begin, timeRange.end, &eventIdx);
-                totalEventCount += eventCount;
-                if(totalEventCount > MAX_LIST_EVENTS)
+                break;
+            }
+            else if(eventCount > 0)
+            {
+                for(int n = 0; n < eventCount; n++)
                 {
-                    break;
-                }
-                else if(eventCount > 0)
-                {
-                    for(int n = 0; n < eventCount; n++)
-                    {
-                        double timestamp = data->getEventTime(eventIdx+n);
-                        QString str = data->getEventText(eventIdx+n, true);
-                        items.append(std::make_tuple(timestamp,str,lane->color));
-                    }
+                    double timestamp = data->getEventTime(eventIdx+n);
+                    QString str = data->getEventText(eventIdx+n, true);
+                    items.append(std::make_tuple(timestamp,str,lane->color));
                 }
             }
         }
